@@ -9,13 +9,13 @@ un movimiento recalcula todo.
 
 ## Lo que hace
 
-- 💳 **Tarjetas de crédito** con día de corte y de pago, compras a **meses sin intereses** y calendario de pagos.
-- 📅 **Próximos pagos**: cortes, pagos de tarjeta, mensualidades y el pago de la semana.
-- 🧾 **Recibos de nómina en PDF**: los importa solos (`pdftotext` + parser) y detecta la semana que falta.
-- 🐷 **Cajas de ahorro** con metas y rendimiento, simulador de compras a meses y calibración de saldos.
-- 📱 **Atajos de Apple**: "Gasté", "Me entró dinero", "Pagué mi tarjeta", "Próximos pagos" y una automatización
+- **Tarjetas de crédito** con día de corte y de pago, compras a **meses sin intereses** y calendario de pagos.
+- **Próximos pagos**: cortes, pagos de tarjeta, mensualidades y el pago de la semana.
+- **Recibos de nómina en PDF**: los importa solos (`pdftotext` + parser) y detecta la semana que falta.
+- **Cajas de ahorro** con metas y rendimiento, simulador de compras a meses y calibración de saldos.
+- **Atajos de Apple**: "Gasté", "Me entró dinero", "Pagué mi tarjeta", "Próximos pagos" y una automatización
   de **Apple Pay** que registra cada compra sola. Se generan con [`atajos/generar_atajos.py`](atajos/generar_atajos.py).
-- 🤖 **Cashy**: asesora financiera con IA que ve los datos pero no mueve nada.
+- **Cashy**: asesora financiera con IA que ve los datos pero no mueve nada.
 
 **Stack:** Python 3.12 · FastAPI · Pydantic · SQLite · pytest (60+ pruebas) · Docker · Apple Shortcuts (plist)
 
