@@ -1,0 +1,64 @@
+# task-hub: API de dinero de Chava (gastos, tarjetas, cajas de ahorro y nóminas de Plexus).
+# La usan los Atajos de Apple (por el Cloudflare Tunnel de abajo, con BEARER_TOKEN) y la pestaña
+# "Dinero" del homelab-dashboard (por la red interna taskhub-finanzas). Ver ATAJOS.md.
+services:
+  backend:
+    build: ./backend   # antes: ghcr.io/chava33165/task-hub-backend (tareas); ahora se construye aquí
+    restart: unless-stopped
+    mem_limit: 128m
+    env_file: .env     # BEARER_TOKEN y CLOUDFLARE_TUNNEL_TOKEN
+    environment:
+      DATABASE_PATH: /data/tasks.db   # misma base de antes; la tabla vieja "tasks" se conserva
+      NOMINAS_DIR: /nominas
+      WORKER_URL: http://worker:8000   # worker de KORRA: corre la sesion de Claude de Cashy
+      TZ: America/Mexico_City
+    # Sin puertos publicados: se llega por el túnel o por la red interna del dashboard.
+    volumes:
+      - task_data:/data
+      - /home/usuario/Documentos/Personal/PLEXUS:/nominas   # recibos que acomoda KORRA (y los que se suben desde la app: POST /nominas/recibo)
+    networks:
+      default: {}
+      finanzas:
+        aliases: [task-hub]
+      korra:      # worker de ~/Servicios/asistente (Cashy); y el bot de KORRA lee /resumen para el mensaje de la mañana
+        aliases: [task-hub]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # --- Consola de la base de datos (perfil "tools", no arranca con "up -d") ---
+  dbcli:
+    image: alpine:latest
+    profiles: ["tools"]
+    volumes:
+      - task_data:/data
+    entrypoint: ["sh", "-c", "apk add --no-cache sqlite >/dev/null 2>&1 && sqlite3 -box /data/tasks.db"]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    mem_limit: 128m
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - backend
+
+networks:
+  # Solo backend + homelab-dashboard. Sin salida a internet.
+  finanzas:
+    name: taskhub-finanzas
+    internal: true
+
+  # La crea ~/Servicios/asistente (bot <-> worker). Hay que levantar el asistente antes que task-hub.
+  korra:
+    name: asistente_interna
+    external: true
+
+volumes:
+  task_data:
